@@ -1,11 +1,25 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 from quantiq.scraper import FundamentusScraper
+from quantiq.database.database import transaction, create_database
+from quantiq.repositories.stock_repository import StockRepository
+from quantiq.repositories.financial_info_repository import FinancialInfoRepository
+from quantiq.repositories.market_values_repository import MarketValuesRepository
+from quantiq.repositories.variations_repository import VariationsRepository
+from quantiq.repositories.indicator_repository import IndicatorRepository
+from quantiq.repositories.balance_sheets_repository import BalanceSheetsRepository
+from quantiq.repositories.financial_results_repository import FinancialResultsRepository
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Quantiq API",
     description="API for scraping stock data from Fundamentus",
-    version="1.0.0"
+    version="1.0.0",
+    logger=logger,
 )
 
 # Configure CORS
@@ -19,6 +33,18 @@ app.add_middleware(
 
 # Initialize scraper
 scraper = FundamentusScraper()
+stock_repository = StockRepository()
+financial_info_repository = FinancialInfoRepository()
+market_values_repository = MarketValuesRepository()
+variations_repository = VariationsRepository()
+indicator_repository = IndicatorRepository()
+balance_sheets_repository = BalanceSheetsRepository()
+financial_results_repository = FinancialResultsRepository()
+
+@app.on_event("startup")
+async def startup_event():
+    create_database()
+    logger.info("Database initialized")
 
 @app.get("/")
 async def root():
@@ -33,6 +59,21 @@ async def root():
 async def get_stock(ticker: str):
     try:
         data = scraper.scrape(ticker)
-        return {"data": data}
+        stored = stock_repository.store(data["basic_info"])
+        details = financial_info_repository.store(data["last_financial_info"], stored["id"])   
+        market_values = market_values_repository.store(data["market_values"], stored["id"])
+        variations = variations_repository.store(data["variations"], stored["id"])
+        indicators = indicator_repository.store(data["indicators"], stored["id"])
+        balance_sheets = balance_sheets_repository.store(data["balance_sheet"], stored["id"])
+        financial_results = financial_results_repository.store(data["financial_results"], stored["id"])
+
+        return { "data": data }
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e)) 
+    
+@app.delete("/stocks/{ticker}")
+async def remove_stock(ticker: str):
+    try:
+        stock_repository.delete(ticker)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))

@@ -35,13 +35,21 @@ class FundamentusScraper:
                 raise Exception(f"No data tables found for {ticker}")
             
             variations, indicators = self._parse_variations_and_indicators(self._extract_table_as_rows(tables[2]))
+            # Parse and clean basic_info
+            basic_info = self._parse_dict_values(self._clean_keys(self._table_rows_to_dict(self._extract_table_as_rows(tables[0]))))
+            # Extract last_financial_info fields
+            last_financial_keys = [
+                "cotacao", "min_52_sem", "max_52_sem", "data_ult_cot", "vol_med_2m"
+            ]
+            last_financial_info = {k: basic_info.pop(k) for k in last_financial_keys if k in basic_info}
             data = {
-                "basic_info": self._parse_dict_values(self._clean_keys(self._table_rows_to_dict(self._extract_table_as_rows(tables[0])))),
-                "market_values": self._parse_dict_values(self._table_rows_to_dict(self._extract_table_as_rows(tables[1]))),
-                "variations": self._parse_dict_values(variations),
-                "indicators": self._parse_dict_values(indicators),
-                "balance_sheet": self._parse_dict_values(self._table_rows_to_dict(self._extract_table_as_rows(tables[3]))),
-                "financial_results": self._parse_financial_results(self._extract_table_as_rows(tables[4]))
+                "basic_info": basic_info,
+                "last_financial_info": last_financial_info,
+                "market_values": self._parse_dict_values(self._clean_keys(self._table_rows_to_dict(self._extract_table_as_rows(tables[1])))),
+                "variations": self._parse_dict_values(self._clean_keys(variations)),
+                "indicators": self._parse_dict_values(self._clean_keys(indicators)),
+                "balance_sheet": self._parse_dict_values(self._clean_keys(self._table_rows_to_dict(self._extract_table_as_rows(tables[3])))),
+                "financial_results": self._clean_financial_results(self._parse_financial_results(self._extract_table_as_rows(tables[4])))
             }
             
             return data
@@ -84,12 +92,22 @@ class FundamentusScraper:
                     result[key] = value
         return result
 
+    def _to_snake_case(self, s: str) -> str:
+        """Convert a string to snake_case."""
+        s = s.lower().replace('ã', 'a').replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('ç', 'c')
+        s = re.sub(r'[^a-z0-9]+', '_', s)
+        s = re.sub(r'_+', '_', s)
+        return s.strip('_')
+
     def _clean_keys(self, d: Dict) -> Dict:
-        """Remove leading '?' and extra spaces from all keys in a dict."""
-        return {k.lstrip('?').strip(): v for k, v in d.items()}
+        """Remove leading '?' and extra spaces from all keys in a dict, and convert to snake_case."""
+        return {self._to_snake_case(k.lstrip('?').strip()): v for k, v in d.items()}
 
     def _parse_value(self, value: str):
         """Parse a string value to int, float, percent, or ISO date if possible."""
+        if value is None or value.strip() == '-':
+            return None
+            
         v = value.strip().replace('.', '').replace(' ', '')
         # Date detection (dd/mm/yyyy)
         date_match = re.match(r'^(\d{2})/(\d{2})/(\d{4})$', value.strip())
@@ -115,6 +133,7 @@ class FundamentusScraper:
         try:
             return float(v.replace(',', '.'))
         except Exception:
+            # Return the original value for fields like nro_ac_es that should remain as strings
             return value
 
     def _parse_dict_values(self, d: Dict) -> Dict:
@@ -154,4 +173,11 @@ class FundamentusScraper:
                     results["last_12_months"][label_12m] = self._parse_value(value_12m)
                 if label_3m:
                     results["last_3_months"][label_3m] = self._parse_value(value_3m)
-        return results 
+        return results
+
+    def _clean_financial_results(self, results: Dict) -> Dict:
+        """Apply _clean_keys to both sub-dicts in financial_results."""
+        return {
+            "last_12_months": self._clean_keys(results.get("last_12_months", {})),
+            "last_3_months": self._clean_keys(results.get("last_3_months", {})),
+        } 
