@@ -78,4 +78,4 @@ quantiq/
 
 ## License
 
-[Add your license information here]
+This project is licensed under the Non-Commercial Use Only License (NCUL). See the [LICENSE](LICENSE) file for details.
