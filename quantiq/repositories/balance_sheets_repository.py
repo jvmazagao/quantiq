@@ -31,6 +31,7 @@ class BalanceSheetsRepository:
                 for balance_sheet in balance_sheets.balance_sheets:
                     values.append((balance_sheet.stock_id, balance_sheet.identifier, balance_sheet.value))
                 cursor = conn.cursor()
+                print(values)
                 query = """
                 INSERT INTO balance_sheet (stock_id, identifier, value)
                 VALUES (?, ?, ?)

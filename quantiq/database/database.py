@@ -74,7 +74,7 @@ tables = {
         CREATE TABLE IF NOT EXISTS balance_sheet (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             stock_id INTEGER,
-            identifier TEXT UNIQUE,
+            identifier TEXT,
             value TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 from quantiq.scraper import FundamentusScraper
 from quantiq.database.database import transaction, create_database
@@ -77,3 +78,39 @@ async def remove_stock(ticker: str):
         stock_repository.delete(ticker)
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+class StockBatch(BaseModel):
+    tickers: list[str]
+
+@app.post("/stocks/batch")
+async def get_multiple_stocks(body: StockBatch):
+    results = []
+    errors = []
+    
+    for ticker in body.tickers:
+        try:
+            data = scraper.scrape(ticker)
+            stored = stock_repository.store(data["basic_info"])
+            details = financial_info_repository.store(data["last_financial_info"], stored["id"])   
+            market_values = market_values_repository.store(data["market_values"], stored["id"])
+            variations = variations_repository.store(data["variations"], stored["id"])
+            indicators = indicator_repository.store(data["indicators"], stored["id"])
+            balance_sheets = balance_sheets_repository.store(data["balance_sheet"], stored["id"])
+            financial_results = financial_results_repository.store(data["financial_results"], stored["id"])
+
+            results.append({
+                "ticker": ticker,
+                "status": "success",
+                "data": data
+            })
+        except Exception as e:
+            errors.append({
+                "ticker": ticker,
+                "status": "error",
+                "error": str(e)
+            })
+    
+    return {
+        "results": results,
+        "errors": errors
+    }
