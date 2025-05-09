@@ -11,7 +11,7 @@ tables = {
         CREATE TABLE IF NOT EXISTS stocks (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ticker TEXT UNIQUE,
-            type TEXT,
+            type TEXT NOT NULL,
             name TEXT,
             sector TEXT,
             subsector TEXT,
