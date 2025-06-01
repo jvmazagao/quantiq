@@ -1,37 +1,20 @@
 import logging
-
+from quantiq.core.repositories.repo import Repository
 from quantiq.database.database import transaction
+from quantiq.modules.balance_sheet.domains.entities import BalanceSheets
 
-class BalanceSheet:
-    def __init__(self, stock_id, identifier, value):
-        self.stock_id = stock_id
-        self.identifier = identifier
-        self.value = value
 
-class BalanceSheets:
-    def __init__(self, balance_sheets):
-        self.balance_sheets = balance_sheets
-
-    @staticmethod
-    def parse(data, stock_id):
-        balance_sheets = []
-        for identifier, value in data.items():
-            balance_sheets.append(BalanceSheet(stock_id, identifier, value))
-        return BalanceSheets(balance_sheets)
-
-class BalanceSheetsRepository:
+class BalanceSheetsRepository(Repository):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
-    def store(self, balance_sheets, stock_id):
+    def store(self, balance_sheets: BalanceSheets):
         with transaction() as conn:
             try:
-                balance_sheets = BalanceSheets.parse(balance_sheets, stock_id)
                 values = []
                 for balance_sheet in balance_sheets.balance_sheets:
                     values.append((balance_sheet.stock_id, balance_sheet.identifier, balance_sheet.value))
                 cursor = conn.cursor()
-                print(values)
                 query = """
                 INSERT INTO balance_sheet (stock_id, identifier, value)
                 VALUES (?, ?, ?)
