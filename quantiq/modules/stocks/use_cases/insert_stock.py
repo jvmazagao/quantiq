@@ -1,6 +1,6 @@
 from quantiq.modules.stocks.domain.entities import Stock
 from quantiq.modules.stocks.repositories.stock_repository import StockRepository
-from quantiq.scraper import FundamentusScraper
+
 from quantiq.modules.balance_sheet.services.service import BalanceSheetService
 from quantiq.modules.financial_info.services.service import FinancialInfoService
 from quantiq.modules.market_values.services.service import MarketValuesService
@@ -8,6 +8,7 @@ from quantiq.modules.variations.repositories.variations_repository import Variat
 from quantiq.modules.financial_results.services.services import FinancialResultsService
 from quantiq.modules.indicators.services.service import IndicatorService
 from quantiq.modules.variations.services.service import VariationsService
+from quantiq.modules.scrapper.providers.fundamentus.stock_extractor import FundamentusScraper
 
 class InsertStock:
     def __init__(
@@ -32,6 +33,7 @@ class InsertStock:
         
     def execute(self, ticker: str):
         stock_data = self.stock_scraper.scrape(ticker)
+        
         if not stock_data:
             raise ValueError(f"Stock data not found for ticker: {ticker}")
         

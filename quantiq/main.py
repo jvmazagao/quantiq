@@ -3,8 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from quantiq.modules.stocks.repositories.stock_repository import StockRepository
+from quantiq.modules.stocks.use_cases.get_stock import GetStock
 from quantiq.modules.stocks.use_cases.insert_stock import InsertStock
-from quantiq.scraper import FundamentusScraper, FundamentusREITScraper
+from quantiq.modules.scrapper.providers.fundamentus.stock_extractor import FundamentusScraper
+from quantiq.modules.scrapper.providers.fundamentus.reit_extractor import FundamentusREITScraper
 from quantiq.database.database import create_database
 from quantiq.modules.financial_info.repository.financial_info_repository import FinancialInfoRepository
 from quantiq.modules.balance_sheet.repositories.balance_sheets_repository import BalanceSheetsRepository
@@ -39,7 +41,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize scrapers
 stock_scraper = FundamentusScraper()
 reit_scraper = FundamentusREITScraper()
 
@@ -53,14 +54,10 @@ insert_stock = InsertStock(
     FinancialResultsService(FinancialResultsRepository()),
     stock_scraper
 )
-stock_router = StockRouter(insert_stock)
 
-financial_info_repository = FinancialInfoRepository()
-market_values_repository = MarketValuesRepository()
-variations_repository = VariationsRepository()
-indicator_repository = IndicatorRepository()
-balance_sheets_repository = BalanceSheetsRepository()
-financial_results_repository = FinancialResultsRepository()
+get_stock = GetStock(StockRepository())
+
+stock_router = StockRouter(insert_stock, get_stock)
 
 @app.on_event("startup")
 async def startup_event():
