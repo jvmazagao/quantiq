@@ -1,16 +1,19 @@
+import logging
 import requests
 from bs4 import BeautifulSoup
 from typing import Dict, List
-import logging
 import re
 from datetime import datetime
 
+from quantiq.modules.scrapper.providers.scrapper import Scrapper
+
 logger = logging.getLogger(__name__)
 
-class FundamentusScraper:
+class FundamentusScraper(Scrapper):
     """Scraper for Fundamentus website."""
     
     def __init__(self):
+        super().__init__("stocks")
         self.base_url = "https://www.fundamentus.com.br/detalhes.php"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -52,6 +55,8 @@ class FundamentusScraper:
                 "financial_results": self._clean_financial_results(self._parse_financial_results(self._extract_table_as_rows(tables[4])))
             }
             
+            # Remove empty dicts from the result
+            data = {k: v for k, v in data.items() if v}
             return data
             
         except requests.exceptions.HTTPError as e:
@@ -175,9 +180,33 @@ class FundamentusScraper:
                     results["last_3_months"][label_3m] = self._parse_value(value_3m)
         return results
 
-    def _clean_financial_results(self, results: Dict) -> Dict:
-        """Apply _clean_keys to both sub-dicts in financial_results."""
+    def _clean_financial_results(self, results: dict) -> dict:
+        """Clean and format the financial results as a nested object with snake_case keys and parsed values."""
+        def to_snake_case(s):
+            s = s.lower()
+            s = s.replace('ã', 'a').replace('á', 'a').replace('é', 'e').replace('í', 'i').replace('ó', 'o').replace('ú', 'u').replace('ç', 'c')
+            s = re.sub(r'[^a-z0-9]+', '_', s)
+            s = re.sub(r'_+', '_', s)
+            return s.strip('_')
+        def parse_value(value):
+            if value is None or value == '-' or value == '':
+                return None
+            v = str(value).strip().replace('.', '').replace(' ', '')
+            if v.endswith('%'):
+                try:
+                    return float(v[:-1].replace(',', '.'))
+                except Exception:
+                    return value
+            if v.isdigit():
+                try:
+                    return int(v)
+                except Exception:
+                    return value
+            try:
+                return float(v.replace(',', '.'))
+            except Exception:
+                return value
         return {
-            "last_12_months": self._clean_keys(results.get("last_12_months", {})),
-            "last_3_months": self._clean_keys(results.get("last_3_months", {})),
-        } 
+            'last_12_months': {to_snake_case(k): parse_value(v) for k, v in results.get('last_12_months', {}).items() if k.strip()},
+            'last_3_months': {to_snake_case(k): parse_value(v) for k, v in results.get('last_3_months', {}).items() if k.strip()}
+        }

@@ -1,11 +1,8 @@
 import sqlite3
-from pathlib import Path
 import logging
 from contextlib import contextmanager
 
-logger = logging.getLogger(__name__)
-
-DB_PATH = Path(__file__).parent.parent / "quantiq.db"
+from quantiq.core.utils.project_root import get_project_root
 
 tables = {
     "stocks": """
@@ -73,10 +70,6 @@ tables = {
             cres_rec_5a      REAL,
             created_at       DATETIME   DEFAULT CURRENT_TIMESTAMP,
             scraped_at       DATETIME   DEFAULT CURRENT_TIMESTAMP,
-            ffo_yield        REAL,
-            ffo_cota         REAL,
-            dividendo_cota   REAL,
-            vp_cota          REAL,
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",
@@ -107,25 +100,38 @@ tables = {
         );"""
 }
 
-
-def create_database():
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    for table in tables:
-        c.execute(tables[table])
-    conn.commit()
-    conn.close()
-
-if __name__ == "__main__":
-    create_database()
-
-@contextmanager
-def transaction(path = DB_PATH):
-    conn = sqlite3.connect(path)
-    try:
-        yield conn
-    except Exception as e:
-        logger.error(f"Error in transaction: {e}")
-        raise e
-    finally:
+class Sqlite:
+    def __init__(self, db_name):
+        self.logger = logging.getLogger(__name__)
+        self.db_name = db_name
+        self.db_path = get_project_root() / db_name
+        self.conn = sqlite3.connect(self.db_path)
+        self.cursor = self.conn.cursor()
+    
+    @staticmethod
+    def create_database(db_name):
+        db_path = get_project_root() / db_name
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        for table in tables:
+            cursor.execute(tables[table])
+        conn.commit()
         conn.close()
+
+    @contextmanager
+    def transaction(self):
+        conn = self.conn
+        try:
+            yield conn
+        except Exception as e:
+            self.logger.error(f"Error in transaction: {e}")
+            raise e
+        finally:
+            conn.close()
+            
+    def execute(self, query, params=None):
+        with self.transaction() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params)
+            conn.commit()
+            return cursor.lastrowid
