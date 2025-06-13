@@ -1,13 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
-from typing import Dict, List
+from typing import List
 import logging
 import re
-from datetime import datetime
+from quantiq.modules.scrapper.providers.scrapper import Scrapper
 
-class FundamentusREITScraper:
-    """Scraper para FIIs/REITs do Fundamentus (refatorado)."""
+logger = logging.getLogger(__name__)
+
+class FundamentusREITScraper(Scrapper):
+
     def __init__(self):
+        super().__init__("reits")
         self.base_url = "https://www.fundamentus.com.br/detalhes.php"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -190,15 +193,33 @@ class FundamentusREITScraper:
         soup = BeautifulSoup(response.text, 'html.parser')
         if self._is_reit_not_found(soup):
             raise Exception(f"REIT with ticker {ticker} not found on Fundamentus")
-        basic_info_dict = self.row_to_dict(self._extract_table_rows_by_header(soup, "FII"))
+        
+        # Get basic info and extract last_financial_info fields
+        basic_info = self.row_to_dict(self._extract_table_rows_by_header(soup, "FII"))
+        last_financial_keys = [
+            "cotacao", "min_52_sem", "max_52_sem", "data_ult_cot", "vol_med_2m"
+        ]
+        last_financial_info = {k: basic_info.pop(k) for k in last_financial_keys if k in basic_info}
+        
+        # Get oscillations and indicators
         oscillations_dict = self.oscillations_to_dict(self._extract_table_rows_by_header(soup, "Oscilações"))
+        
+        # Get properties info as market values
         properties_dict = self.row_to_dict(self._extract_table_rows_by_header(soup, "Imóveis"))
         
-        return {
-            **oscillations_dict,
-            "company": basic_info_dict,
-            "properties": properties_dict
+        data = {
+            "basic_info": basic_info,
+            "last_financial_info": last_financial_info,
+            "market_values": properties_dict,
+            "variations": oscillations_dict.get("oscillations", {}),
+            "indicators": oscillations_dict.get("indicators", {}),
+            "balance_sheet": oscillations_dict.get("balance_sheet", {}),
+            "financial_results": oscillations_dict.get("indicators_by_period", {})
         }
+        
+        # Remove empty dicts from the result
+        data = {k: v for k, v in data.items() if v}
+        return data
 
     def _is_reit_not_found(self, soup: BeautifulSoup) -> bool:
         """Check if the REIT was not found on Fundamentus."""
@@ -311,7 +332,7 @@ class FundamentusREITScraper:
                     resultados_tables.append(result)
         return resultados_tables
 
-    def _parse_variations_and_indicators(self, rows: List[List[str]]) -> (Dict, Dict):
+    def _parse_variations_and_indicators(self, rows: List[List[str]]) -> tuple[dict, dict]:
         """Split the variations and indicators table into two dicts."""
         variations = {}
         indicators = {}

@@ -38,3 +38,4 @@ class StockServices:
             "indicators": indicators,
             "financial_results": financial_results
         }
+    

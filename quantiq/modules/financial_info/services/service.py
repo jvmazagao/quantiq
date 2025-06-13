@@ -7,8 +7,8 @@ class FinancialInfoService:
 
     def store(self, financial_info: dict, stock_id: int):
         financial_info = FinancialInfo.parse(financial_info, stock_id)
-        self.financial_info_repository.store(financial_info)
-        return financial_info.id
+        id = self.financial_info_repository.store(financial_info)
+        return id
     
     def fetch(self, stock_id: int) -> FinancialInfo | None:
         return self.financial_info_repository.fetch(stock_id)

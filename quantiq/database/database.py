@@ -37,7 +37,7 @@ tables = {
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             stock_id     INTEGER    NOT NULL,
             identifier   TEXT       NOT NULL,        -- e.g. 'valor_de_mercado', 'ult_balanco_processado'
-            value        TEXT       NOT NULL,
+            value        TEXT       DEFAULT NULL,
             created_at   DATETIME   DEFAULT CURRENT_TIMESTAMP,
             scraped_at   DATETIME   DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
@@ -73,6 +73,10 @@ tables = {
             cres_rec_5a      REAL,
             created_at       DATETIME   DEFAULT CURRENT_TIMESTAMP,
             scraped_at       DATETIME   DEFAULT CURRENT_TIMESTAMP,
+            ffo_yield        REAL,
+            ffo_cota         REAL,
+            dividendo_cota   REAL,
+            vp_cota          REAL,
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",

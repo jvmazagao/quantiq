@@ -13,7 +13,7 @@ class StockRouter(APIRouter):
         self.register_routes()
 
     def register_routes(self):
-        self.add_api_route("/stocks/{ticker}", self.insert_stock_use_case.execute, methods=["POST"])
+        self.add_api_route("/{type}/{ticker}", self.insert_stock_use_case.execute, methods=["POST"])
         self.add_api_route("/stocks/{ticker}", self.get_stock_use_case.execute, methods=["GET"])
     
         

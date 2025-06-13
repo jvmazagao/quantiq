@@ -15,7 +15,4 @@ class Indicator:
     
     @staticmethod
     def parse(data: dict, stock_id: int):
-        for key, value in data.items():
-            if value is None or value == "-":
-                data[key] = None
-        return Indicator(stock_id, data['p_l'], data['p_vp'], data['p_ebit'], data['psr'], data['p_ativos'], data['p_cap_giro'], data['p_ativ_circ_liq'], data['div_yield'], data['ev_ebitda'], data['ev_ebit'], data['cres_rec_5a']) 
+        return Indicator(stock_id, data.get('p_l', None), data.get('p_vp', None), data.get('p_ebit', None), data.get('psr', None), data.get('p_ativos', None), data.get('p_cap_giro', None), data.get('p_ativ_circ_liq', None), data.get('div_yield', None), data.get('ev_ebitda', None), data.get('ev_ebit', None), data.get('cres_rec_5a', None)) 

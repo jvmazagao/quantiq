@@ -19,7 +19,8 @@ class StockRepository:
                 """, (stock.ticker, stock.type, stock.name, stock.sector, stock.subsector))
                 conn.commit()
                 self.logger.info(f"Stock {stock.ticker} inserted successfully")
-                return { 'id': cursor.lastrowid, 'ticker': stock.ticker }
+                res = self.fetch(stock.ticker)
+                return res
             except sqlite3.Error as e:
                 if isinstance(e, sqlite3.IntegrityError):
                     self.logger.error(f"Stock {stock.ticker} already exists")

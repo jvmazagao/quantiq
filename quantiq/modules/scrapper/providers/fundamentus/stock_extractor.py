@@ -5,12 +5,15 @@ from typing import Dict, List
 import re
 from datetime import datetime
 
+from quantiq.modules.scrapper.providers.scrapper import Scrapper
+
 logger = logging.getLogger(__name__)
 
-class FundamentusScraper:
+class FundamentusScraper(Scrapper):
     """Scraper for Fundamentus website."""
     
     def __init__(self):
+        super().__init__("stocks")
         self.base_url = "https://www.fundamentus.com.br/detalhes.php"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"

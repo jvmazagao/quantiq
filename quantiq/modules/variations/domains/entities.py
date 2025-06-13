@@ -11,4 +11,6 @@ class Variations:
 
     @staticmethod
     def parse(data: dict, stock_id: int):
-        return Variations([Variation(stock_id, period, value) for period, value in data.items()]) 
+        if not data:
+            return Variations([])
+        return Variations([Variation(stock_id, period, value) for period, value in data.items() if value is not None]) 
