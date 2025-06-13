@@ -3,11 +3,11 @@ from quantiq.modules.stocks.repositories.stock_repository import StockRepository
 
 from quantiq.modules.balance_sheet.services.service import BalanceSheetService
 from quantiq.modules.financial_info.services.service import FinancialInfoService
-from quantiq.modules.market_values.services.service import MarketValuesService
-from quantiq.modules.variations.repositories.variations_repository import VariationsRepository
-from quantiq.modules.financial_results.services.services import FinancialResultsService
-from quantiq.modules.indicators.services.service import IndicatorService
-from quantiq.modules.variations.services.service import VariationsService
+from quantiq.modules.market_values.services.market_values import MarketValuesService
+from quantiq.modules.variations.repositories.variations import VariationsRepository
+from quantiq.modules.financial_results.services.financial_results import FinancialResultsService
+from quantiq.modules.indicators.services.indicators import IndicatorService
+from quantiq.modules.variations.services.variations import VariationsService
 from quantiq.modules.scrapper.providers.fundamentus.stock_extractor import FundamentusScraper
 
 class InsertStock:

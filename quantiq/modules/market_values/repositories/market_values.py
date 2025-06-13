@@ -36,3 +36,13 @@ class MarketValuesRepository:
                 self.logger.error(f"Error storing market values: {e}")
                 conn.rollback()
                 raise e 
+    
+    def fetch(self, stock_id: int) -> MarketValues | None:
+        with transaction() as conn:
+            cursor = conn.cursor()
+            rows = cursor.execute("SELECT stock_id, identifier, value FROM market_values WHERE stock_id = ?", (stock_id,)).fetchall()
+            
+            if not len(rows):
+                return None
+            
+            return MarketValues([MarketValue(row[0], row[1], row[2]) for row in rows])

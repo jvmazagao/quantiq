@@ -24,11 +24,22 @@ class FinancialInfoRepository:
                 conn.rollback()
                 raise e
             
-    def fetch_by_stock_id(self, stock_id: int):
+    def fetch(self, stock_id: int) -> FinancialInfo | None:
         with transaction() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM financial_info WHERE stock_id = ?", (stock_id,))
-            return cursor.fetchall()
+            cursor.execute("SELECT stock_id, price, min_52_sem, max_52_sem, last_price_date, volume_by_2m FROM financial_info WHERE stock_id = ?", (stock_id,))
+            row = cursor.fetchone()
+            if not row:
+                return None
+            
+            return FinancialInfo(
+                stock_id=row[0],
+                price=row[1],
+                min_52_sem=row[2] if row[2] else None,
+                max_52_sem=row[3] if row[3] else None,
+                last_price_date=row[4],
+                volume_by_2m=row[5]
+            )
     
     def delete(self, stock_id: int):
         with transaction() as conn:

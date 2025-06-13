@@ -1,6 +1,6 @@
 import logging
 from quantiq.database.database import transaction
-from quantiq.modules.financial_results.domains.entities import FinancialResults
+from quantiq.modules.financial_results.domains.entities import FinancialResults, FinancialResult
 
 class FinancialResultsRepository:
     def __init__(self):
@@ -28,3 +28,15 @@ class FinancialResultsRepository:
                 self.logger.error(f"Error storing financial results: {e}")
                 conn.rollback()
                 raise e 
+    
+    def fetch(self, stock_id: int) -> FinancialResults | None:
+        with transaction() as conn:
+            cursor = conn.cursor()
+            rows = cursor.execute("SELECT id, period, identifier, value FROM financial_period WHERE stock_id = ?", (stock_id,)).fetchall()
+            
+            if not len(rows):
+                return None
+            
+            return FinancialResults(
+                [FinancialResult(row[0], row[1], row[2], row[3]) for row in rows]
+            )

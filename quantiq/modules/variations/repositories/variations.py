@@ -1,6 +1,6 @@
 import logging
 from quantiq.database.database import transaction
-from quantiq.modules.variations.domains.entities import Variations
+from quantiq.modules.variations.domains.entities import Variations, Variation
 
 class VariationsRepository:
     def __init__(self):
@@ -20,4 +20,14 @@ class VariationsRepository:
                 conn.commit()
             except Exception as e:
                 self.logger.error(f"Error storing variation: {e}")
-                conn.rollback() 
+                conn.rollback()
+    
+    def fetch(self, stock_id: int) -> Variations | None:
+        with transaction() as conn:
+            cursor = conn.cursor()
+            rows = cursor.execute("SELECT stock_id, period, value FROM variations WHERE stock_id = ?", (stock_id,)).fetchall()
+            
+            if not len(rows):
+                return None
+
+            return Variations([Variation(row[0], row[1], row[2]) for row in rows])

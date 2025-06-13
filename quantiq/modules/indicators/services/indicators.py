@@ -1,4 +1,4 @@
-from quantiq.modules.indicators.repositories.indicator_repository import IndicatorRepository
+from quantiq.modules.indicators.repositories.indicators import IndicatorRepository
 from quantiq.modules.indicators.domains.entities import Indicator
 
 class IndicatorService:
@@ -9,3 +9,6 @@ class IndicatorService:
         indicators = Indicator.parse(indicators, stock_id)
         stored_indicators = self.indicator_repository.store(indicators)
         return stored_indicators
+    
+    def fetch(self, stock_id: int) -> Indicator | None:
+        return self.indicator_repository.fetch(stock_id)

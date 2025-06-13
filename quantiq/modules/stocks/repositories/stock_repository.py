@@ -31,18 +31,17 @@ class StockRepository:
     def fetch(self, ticker: str):
         with transaction() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM stocks WHERE ticker = ?", (ticker.upper(),))
+            cursor.execute("SELECT id, ticker, type, name, sector, subsector FROM stocks WHERE ticker = ?", (ticker.upper(),))
             row = cursor.fetchone()
             if row:
-                return {
-                    "id": row[0],
-                    "ticker": row[1],
-                    "type": row[2],
-                    "name": row[3],
-                    "sector": row[4],
-                    "subsector": row[5]
-                } 
-
+                return Stock(
+                    id=row[0],
+                    ticker=row[1],
+                    type=row[2],
+                    name=row[3],
+                    sector=row[4],
+                    subsector=row[5]
+                )
             return None
 
     def delete(self, ticker: str):

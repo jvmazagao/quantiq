@@ -1,26 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
-from quantiq.modules.stocks.repositories.stock_repository import StockRepository
-from quantiq.modules.stocks.use_cases.get_stock import GetStock
-from quantiq.modules.stocks.use_cases.insert_stock import InsertStock
-from quantiq.modules.scrapper.providers.fundamentus.stock_extractor import FundamentusScraper
-from quantiq.modules.scrapper.providers.fundamentus.reit_extractor import FundamentusREITScraper
 from quantiq.database.database import create_database
-from quantiq.modules.financial_info.repository.financial_info_repository import FinancialInfoRepository
-from quantiq.modules.balance_sheet.repositories.balance_sheets_repository import BalanceSheetsRepository
-from quantiq.modules.market_values.repositories.market_values_repository import MarketValuesRepository
-from quantiq.modules.variations.repositories.variations_repository import VariationsRepository
-from quantiq.modules.indicators.repositories.indicator_repository import IndicatorRepository
-from quantiq.modules.financial_results.repositories.financial_results_repository import FinancialResultsRepository
-from quantiq.modules.stocks.presentation.api.stock_router import StockRouter
-from quantiq.modules.balance_sheet.services.service import BalanceSheetService
-from quantiq.modules.financial_info.services.service import FinancialInfoService
-from quantiq.modules.financial_results.services.services import FinancialResultsService
-from quantiq.modules.indicators.services.service import IndicatorService
-from quantiq.modules.market_values.services.service import MarketValuesService
-from quantiq.modules.variations.services.service import VariationsService
+from quantiq.modules.stocks.dependencies import make_stock_router
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,29 +24,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-stock_scraper = FundamentusScraper()
-reit_scraper = FundamentusREITScraper()
-
-insert_stock = InsertStock(
-    StockRepository(),
-    BalanceSheetService(BalanceSheetsRepository()),
-    FinancialInfoService(FinancialInfoRepository()),
-    MarketValuesService(MarketValuesRepository()),
-    VariationsService(VariationsRepository()),
-    IndicatorService(IndicatorRepository()),
-    FinancialResultsService(FinancialResultsRepository()),
-    stock_scraper
-)
-
-get_stock = GetStock(StockRepository())
-
-stock_router = StockRouter(insert_stock, get_stock)
 
 @app.on_event("startup")
 async def startup_event():
     create_database()
     logger.info("Database initialized")
-    app.include_router(stock_router)
+    app.include_router(make_stock_router())
 
 @app.get("/")
 async def root():

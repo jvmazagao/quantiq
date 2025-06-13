@@ -1,4 +1,4 @@
-from quantiq.modules.variations.repositories.variations_repository import VariationsRepository
+from quantiq.modules.variations.repositories.variations import VariationsRepository
 from quantiq.modules.variations.domains.entities import Variations
 
 class VariationsService:
@@ -9,3 +9,6 @@ class VariationsService:
         variations = Variations.parse(variations, stock_id)
         stored_variations = self.variations_repository.store(variations)
         return stored_variations
+
+    def fetch(self, stock_id: int) -> Variations | None:
+        return self.variations_repository.fetch(stock_id)

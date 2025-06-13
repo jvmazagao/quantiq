@@ -1,17 +1,8 @@
-from fastapi import HTTPException
-from quantiq.modules.stocks.repositories.stock_repository import StockRepository
+from quantiq.modules.stocks.services.stock_services import StockServices
 
 class GetStock: 
-    def __init__(self, stock_repository: StockRepository):
-        self.stock_repository = stock_repository
+    def __init__(self, stock_services: StockServices):
+        self.stock_services = stock_services
 
     def execute(self, ticker: str):
-        stock = self.stock_repository.fetch(ticker)
-        if not stock:
-            raise HTTPException(status_code=404, detail={
-                "error": "stock.not.found",
-                "ticker": ticker,
-                "code": "ST_001"
-            })
-            
-        return stock
+        return self.stock_services.get_stock(ticker)

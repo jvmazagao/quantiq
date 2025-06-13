@@ -7,9 +7,9 @@ class FinancialInfo:
                  min_52_sem: float, 
                  max_52_sem: float, 
                  last_price_date: datetime, 
-                 volume_by_2m: int, 
-                 id: int = None):
-        self.id = id
+                 volume_by_2m: int
+                 ):
+        
         self.stock_id = stock_id
         self.price = price
         self.min_52_sem = min_52_sem
