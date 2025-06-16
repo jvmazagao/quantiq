@@ -1,3 +1,4 @@
+# .pre-commit-config.yaml - Automatic linting on git commits
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
@@ -7,18 +8,16 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
       - id: check-toml
+      - id: check-json
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.6
     hooks:
       - id: ruff
-        args: [--fix, --target-version=py311]
+        args: [--fix]
       - id: ruff-format
-        args: [--target-version=py311]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.341
     hooks:
-      - id: mypy
-        additional_dependencies: [types-requests]
-        args: [--python-version=3.10]
+      - id: pyright

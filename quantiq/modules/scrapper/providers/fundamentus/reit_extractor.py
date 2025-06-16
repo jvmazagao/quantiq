@@ -1,4 +1,4 @@
-# mypy: ignore-errors
+# type: ignore-all
 
 import contextlib
 import logging
@@ -45,27 +45,27 @@ class FundamentusREITScraper(Scrapper):
             try:
                 return float(v[:-1].replace(",", "."))
             except Exception:
-                return value
+                return value  # type: ignore
         # Inteiro
         if v.isdigit():
             try:
                 return int(v)
             except Exception:
-                return value
+                return value  # type: ignore
         # Float
         try:
             return float(v.replace(",", "."))
         except Exception:
-            return value
+            return value  # type: ignore
 
     def _extract_basic_info(self, soup: BeautifulSoup) -> dict[str, Any]:
         """Extrai a tabela principal de informações básicas e cotação."""
         table = soup.find_all("table")[0]
-        rows = table.find_all("tr")
+        rows = table.find_all("tr")  # type: ignore
         basic_info = {}
         cotacao_info = {}
         for row in rows:
-            cols = row.find_all(["td", "th"])
+            cols = row.find_all(["td", "th"])  # type: ignore
             if len(cols) == 4:
                 k1, v1, k2, v2 = (c.get_text(strip=True) for c in cols)
                 k1 = self._to_snake_case(k1.lstrip("?").strip())
@@ -107,7 +107,7 @@ class FundamentusREITScraper(Scrapper):
                 rows = table.find_all("tr")[1:]  # pula o cabeçalho
                 oscilations = {}
                 for row in rows:
-                    cols = row.find_all(["td", "th"])
+                    cols = row.find_all(["td", "th"])  # type: ignore
                     if len(cols) >= 2:
                         k = self._to_snake_case(
                             cols[0].get_text(strip=True).lstrip("?").strip()
@@ -126,7 +126,8 @@ class FundamentusREITScraper(Scrapper):
                 indicadores = {}
                 for tr in table.find_all("tr"):
                     cells = [
-                        cell.get_text(strip=True) for cell in tr.find_all(["th", "td"])
+                        cell.get_text(strip=True)
+                        for cell in tr.find_all(["th", "td"])  # type: ignore
                     ]
                     if len(cells) >= 4:
                         key = cells[2]
@@ -154,7 +155,8 @@ class FundamentusREITScraper(Scrapper):
                 rows = []
                 for tr in table.find_all("tr"):
                     cells = [
-                        cell.get_text(strip=True) for cell in tr.find_all(["th", "td"])
+                        cell.get_text(strip=True)
+                        for cell in tr.find_all(["th", "td"])  # type: ignore
                     ]
                     if cells:
                         rows.append(cells)
@@ -277,12 +279,12 @@ class FundamentusREITScraper(Scrapper):
         """Extract the 'Imóveis' table as a dictionary."""
         # Find the table with the header 'Imóveis'
         for table in soup.find_all("table"):
-            header = table.find("tr")
-            if header and "Imóveis" in header.get_text():
-                rows = table.find_all("tr")[1:]
+            header = table.find("tr")  # type: ignore
+            if header and "Imóveis" in header.get_text():  # type: ignore
+                rows = table.find_all("tr")[1:]  # type: ignore
                 imoveis_data = {}
                 for row in rows:
-                    cols = row.find_all(["td", "th"])
+                    cols = row.find_all(["td", "th"])  # type: ignore
                     if len(cols) == 6:
                         imoveis_data[cols[0].get_text(strip=True)] = cols[1].get_text(
                             strip=True
@@ -343,12 +345,12 @@ class FundamentusREITScraper(Scrapper):
     def _extract_balance_sheet_table(self, soup: BeautifulSoup) -> dict:
         """Extract the 'Balanço Patrimonial' table as a dictionary for REITs."""
         for table in soup.find_all("table"):
-            header = table.find("tr")
-            if header and "Balanço Patrimonial" in header.get_text():
-                rows = table.find_all("tr")[1:]
+            header = table.find("tr")  # type: ignore
+            if header and "Balanço Patrimonial" in header.get_text():  # type: ignore
+                rows = table.find_all("tr")[1:]  # type: ignore
                 balance_data = {}
                 for row in rows:
-                    cols = row.find_all(["td", "th"])
+                    cols = row.find_all(["td", "th"])  # type: ignore
                     if len(cols) == 2:
                         balance_data[cols[0].get_text(strip=True)] = cols[1].get_text(
                             strip=True
@@ -360,17 +362,17 @@ class FundamentusREITScraper(Scrapper):
         """Extract all 'Resultados' or 'Results' tables as a list of dicts."""
         resultados_tables = []
         for table in soup.find_all("table"):
-            header = table.find("tr")
+            header = table.find("tr")  # type: ignore
             if header and (
-                ("Resultados" in header.get_text()) or ("Results" in header.get_text())
+                ("Resultados" in header.get_text()) or ("Results" in header.get_text())  # type: ignore
             ):
-                rows = table.find_all("tr")[1:]
+                rows = table.find_all("tr")[1:]  # type: ignore
                 # Try to parse as a two-period table (12m/3m)
-                if rows and len(rows[0].find_all(["td", "th"])) >= 4:
+                if rows and len(rows[0].find_all(["td", "th"])) >= 4:  # type: ignore
                     last_12_months = {}
                     last_3_months = {}
                     for row in rows:
-                        cols = row.find_all(["td", "th"])
+                        cols = row.find_all(["td", "th"])  # type: ignore
                         if len(cols) >= 4:
                             k12 = cols[0].get_text(strip=True)
                             v12 = cols[1].get_text(strip=True)
@@ -390,7 +392,7 @@ class FundamentusREITScraper(Scrapper):
                     # Fallback: parse as a simple key-value table
                     result = {}
                     for row in rows:
-                        cols = row.find_all(["td", "th"])
+                        cols = row.find_all(["td", "th"])  # type: ignore
                         if len(cols) >= 2:
                             k = cols[0].get_text(strip=True)
                             v = cols[1].get_text(strip=True)

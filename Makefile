@@ -50,7 +50,7 @@ format:
 
 typecheck:
 	@echo "$(BLUE)🔍 Running type checks...$(NC)"
-	poetry run mypy .
+	poetry run pyright .
 	@echo "$(GREEN)✅ Type checking completed$(NC)"
 
 test:

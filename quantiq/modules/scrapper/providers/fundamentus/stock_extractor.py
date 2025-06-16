@@ -1,4 +1,5 @@
-# mypy: ignore-errors
+# type: ignore-all
+
 from datetime import datetime
 import logging
 import re
@@ -44,12 +45,12 @@ class FundamentusScraper(Scrapper):
                 raise Exception(f"No data tables found for {ticker}")
 
             variations, indicators = self._parse_variations_and_indicators(
-                self._extract_table_as_rows(tables[2])
+                self._extract_table_as_rows(tables[2])  # type: ignore
             )
             # Parse and clean basic_info
             basic_info = self._parse_dict_values(
                 self._clean_keys(
-                    self._table_rows_to_dict(self._extract_table_as_rows(tables[0]))
+                    self._table_rows_to_dict(self._extract_table_as_rows(tables[0]))  # type: ignore
                 )
             )
             # Extract last_financial_info fields
@@ -68,19 +69,19 @@ class FundamentusScraper(Scrapper):
                 "last_financial_info": last_financial_info,
                 "market_values": self._parse_dict_values(
                     self._clean_keys(
-                        self._table_rows_to_dict(self._extract_table_as_rows(tables[1]))
+                        self._table_rows_to_dict(self._extract_table_as_rows(tables[1]))  # type: ignore
                     )
                 ),
                 "variations": self._parse_dict_values(self._clean_keys(variations)),
                 "indicators": self._parse_dict_values(self._clean_keys(indicators)),
                 "balance_sheet": self._parse_dict_values(
                     self._clean_keys(
-                        self._table_rows_to_dict(self._extract_table_as_rows(tables[3]))
+                        self._table_rows_to_dict(self._extract_table_as_rows(tables[3]))  # type: ignore
                     )
                 ),
                 "financial_results": self._clean_financial_results(
                     self._parse_financial_results(
-                        self._extract_table_as_rows(tables[4])
+                        self._extract_table_as_rows(tables[4])  # type: ignore
                     )
                 ),
             }
@@ -90,7 +91,7 @@ class FundamentusScraper(Scrapper):
             return data
 
         except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
+            if e.response.status_code == 404:  # type: ignore
                 raise Exception(
                     f"Company with ticker {ticker} not found on Fundamentus"
                 ) from e
@@ -111,7 +112,7 @@ class FundamentusScraper(Scrapper):
         rows_data = []
         rows = table.find_all("tr")
         for row in rows:
-            cols = row.find_all(["td", "th"])
+            cols = row.find_all(["td", "th"])  # type: ignore
             cell_values = [col.get_text(strip=True) for col in cols]
             if cell_values:
                 rows_data.append(cell_values)
