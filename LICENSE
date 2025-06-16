@@ -7,21 +7,21 @@ of this software and associated documentation files (the "Software"), to use,
 copy, modify, merge, publish, distribute, and sublicense the Software,
 subject to the following conditions:
 
-1. Non-Commercial Restriction  
+1. Non-Commercial Restriction
    The rights granted above are for non-commercial purposes only. "Commercial
    purposes" means any use, distribution, or sale of the Software, or any
    derivative works, for monetary compensation, including but not limited to:
-   - selling the Software or a derivative work;  
+   - selling the Software or a derivative work;
    - offering the Software (or derivative) as part of a paid service or
-     subscription;  
+     subscription;
    - using the Software in any product, service, or workflow that generates
      revenue, licensing fees, or other financial value.
 
-2. Attribution  
+2. Attribution
    Redistributions of source code must retain the above copyright notice,
    this list of conditions, and the following disclaimer.
 
-3. Disclaimer of Warranty  
+3. Disclaimer of Warranty
    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
    FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -29,9 +29,9 @@ subject to the following conditions:
    FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
 
-4. Limitation of Liability  
+4. Limitation of Liability
    IN NO EVENT AND UNDER NO LEGAL THEORY, WHETHER IN TORT (INCLUDING NEGLIGENCE),
    CONTRACT, OR OTHERWISE, SHALL THE AUTHOR BE LIABLE TO YOU OR ANY OTHER PERSON
    FOR ANY INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES OF ANY
    CHARACTER ARISING OUT OF OR IN CONNECTION WITH THE SOFTWARE, EVEN IF THE
-   AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. 
+   AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.

@@ -1,6 +1,8 @@
-import sqlite3
-import logging
+from collections.abc import Generator
 from contextlib import contextmanager
+import logging
+import sqlite3
+from typing import Any
 
 from quantiq.core.utils.project_root import get_project_root
 
@@ -16,7 +18,6 @@ tables = {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );""",
-
     "financial_info": """
         CREATE TABLE IF NOT EXISTS financial_info (
             stock_id         INTEGER    NOT NULL,
@@ -28,7 +29,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",
-
     "market_values": """
         CREATE TABLE IF NOT EXISTS market_values (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,7 +40,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, identifier)
         );""",
-
     "variations": """
         CREATE TABLE IF NOT EXISTS variations (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +51,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, period)
         );""",
-
     "indicators": """
         CREATE TABLE IF NOT EXISTS indicators (
             id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +71,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",
-
     "balance_sheet": """
         CREATE TABLE IF NOT EXISTS balance_sheet (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -85,7 +82,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, identifier)
         );""",
-
     "financial_period": """
         CREATE TABLE IF NOT EXISTS financial_period (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,19 +93,27 @@ tables = {
             scraped_at   DATETIME   DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, period, identifier)
-        );"""
+        );""",
 }
 
+
 class Sqlite:
-    def __init__(self, db_name):
+    def __init__(self, db_name: str) -> None:
         self.logger = logging.getLogger(__name__)
         self.db_name = db_name
         self.db_path = get_project_root() / db_name
         self.conn = sqlite3.connect(self.db_path)
         self.cursor = self.conn.cursor()
-    
+
+    """
+    Create the database.
+
+    Args:
+        db_name: The name of the database.
+    """
+
     @staticmethod
-    def create_database(db_name):
+    def create_database(db_name: str) -> None:
         db_path = get_project_root() / db_name
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -118,8 +122,12 @@ class Sqlite:
         conn.commit()
         conn.close()
 
+    """
+    Transaction context manager.
+    """
+
     @contextmanager
-    def transaction(self):
+    def transaction(self) -> Generator[sqlite3.Connection, None, None]:
         conn = self.conn
         try:
             yield conn
@@ -128,10 +136,13 @@ class Sqlite:
             raise e
         finally:
             conn.close()
-            
-    def execute(self, query, params=None):
+
+    def execute(self, query: str, params: Any | None = None) -> int:
         with self.transaction() as conn:
             cursor = conn.cursor()
-            cursor.execute(query, params)
+            cursor.execute(query, params or {})
             conn.commit()
-            return cursor.lastrowid
+            lastrowid = cursor.lastrowid
+            if lastrowid is None:
+                return 0
+            return lastrowid

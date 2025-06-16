@@ -36,7 +36,7 @@ Removes stock data for a given ticker.
 Retrieves and stores stock data for multiple tickers in a single request.
 - Parameters:
   - `tickers`: List of stock ticker symbols (e.g., ["PETR4", "VALE3", "ITUB4"])
-- Returns: 
+- Returns:
   - `results`: List of successfully processed stocks with their data
   - `errors`: List of stocks that failed to process with error messages
 
