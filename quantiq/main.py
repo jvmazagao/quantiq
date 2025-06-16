@@ -1,10 +1,11 @@
+import logging
+from typing import Any
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from quantiq.database.database import create_database
 from quantiq.modules.stocks.dependencies import make_stock_router
-
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -25,29 +26,29 @@ app.add_middleware(
 )
 
 
-@app.on_event("startup")
-async def startup_event():
+@app.on_event("startup")  # type: ignore
+async def startup_event() -> None:
     create_database()
     logger.info("Database initialized")
     app.include_router(make_stock_router())
 
-@app.get("/")
-async def root():
+
+@app.get("/")  # type: ignore
+async def root() -> dict[str, Any]:
     return {
         "message": "Welcome to Quantiq API",
-        "endpoints": {
-            "/stocks/{ticker}": "Get stock data for a given ticker"
-        }
+        "endpoints": {"/stocks/{ticker}": "Get stock data for a given ticker"},
     }
+
 
 # @app.get("/v1/stocks/{ticker}")
 # async def get_stock(ticker: str):
 #     try:
 #         data = stock_scraper.scrape(ticker)
 #         data["basic_info"]["tipo"] = "stock"  # Add type field for regular stocks
-        
+
 #         # stored = stock_repository.store(data["basic_info"])
-#         details = financial_info_repository.store(data["last_financial_info"], stored["id"])   
+#         details = financial_info_repository.store(data["last_financial_info"], stored["id"])
 #         market_values = market_values_repository.store(data["market_values"], stored["id"])
 #         variations = variations_repository.store(data["variations"], stored["id"])
 #         indicators = indicator_repository.store(data["indicators"], stored["id"])
@@ -83,14 +84,14 @@ async def root():
 # async def get_multiple_stocks(body: StockBatch):
 #     results = []
 #     errors = []
-    
+
 #     for ticker in body.tickers:
 #         try:
 #             data = stock_scraper.scrape(ticker)
 #             data["basic_info"]["tipo"] = "stock"  # Add type field for regular stocks
-            
+
 #             stored = stock_repository.store(data["basic_info"])
-#             details = financial_info_repository.store(data["last_financial_info"], stored["id"])   
+#             details = financial_info_repository.store(data["last_financial_info"], stored["id"])
 #             market_values = market_values_repository.store(data["market_values"], stored["id"])
 #             variations = variations_repository.store(data["variations"], stored["id"])
 #             indicators = indicator_repository.store(data["indicators"], stored["id"])
@@ -108,7 +109,7 @@ async def root():
 #                 "status": "error",
 #                 "error": str(e)
 #             })
-    
+
 #     return {
 #         "results": results,
 #         "errors": errors
@@ -118,7 +119,7 @@ async def root():
 # async def get_multiple_reits(body: REITBatch):
 #     results = []
 #     errors = []
-    
+
 #     for ticker in body.tickers:
 #         try:
 #             data = reit_scraper.scrape(ticker)
@@ -133,7 +134,7 @@ async def root():
 #                 "status": "error",
 #                 "error": str(e)
 #             })
-    
+
 #     return {
 #         "results": results,
 #         "errors": errors

@@ -1,7 +1,8 @@
-import sqlite3
-from pathlib import Path
-import logging
+from collections.abc import Generator
 from contextlib import contextmanager
+import logging
+from pathlib import Path
+import sqlite3
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +20,6 @@ tables = {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             scraped_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );""",
-
     "financial_info": """
         CREATE TABLE IF NOT EXISTS financial_info (
             stock_id         INTEGER    NOT NULL,
@@ -31,7 +31,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",
-
     "market_values": """
         CREATE TABLE IF NOT EXISTS market_values (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -43,7 +42,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, identifier)
         );""",
-
     "variations": """
         CREATE TABLE IF NOT EXISTS variations (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -55,7 +53,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, period)
         );""",
-
     "indicators": """
         CREATE TABLE IF NOT EXISTS indicators (
             id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,7 +77,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id)
         );""",
-
     "balance_sheet": """
         CREATE TABLE IF NOT EXISTS balance_sheet (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,7 +88,6 @@ tables = {
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, identifier)
         );""",
-
     "financial_period": """
         CREATE TABLE IF NOT EXISTS financial_period (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,11 +99,11 @@ tables = {
             scraped_at   DATETIME   DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (stock_id) REFERENCES stocks(id),
             UNIQUE(stock_id, period, identifier)
-        );"""
+        );""",
 }
 
 
-def create_database():
+def create_database() -> None:
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
     for table in tables:
@@ -116,11 +111,13 @@ def create_database():
     conn.commit()
     conn.close()
 
+
 if __name__ == "__main__":
     create_database()
 
+
 @contextmanager
-def transaction(path = DB_PATH):
+def transaction(path: Path = DB_PATH) -> Generator[sqlite3.Connection, None, None]:
     conn = sqlite3.connect(path)
     try:
         yield conn

@@ -1,5 +1,22 @@
+from typing import Any
+
+
 class Indicator:
-    def __init__(self, stock_id: int, p_l: float, p_vp: float, p_ebit: float, psr: float, p_ativos: float, p_cap_giro: float, p_ativ_circ_liq: float, div_yield: float, ev_ebitda: float, ev_ebit: float, cres_rec_5a: float):
+    def __init__(
+        self,
+        stock_id: int,
+        p_l: float | None,
+        p_vp: float | None,
+        p_ebit: float | None,
+        psr: float | None,
+        p_ativos: float | None,
+        p_cap_giro: float | None,
+        p_ativ_circ_liq: float | None,
+        div_yield: float | None,
+        ev_ebitda: float | None,
+        ev_ebit: float | None,
+        cres_rec_5a: float | None,
+    ) -> None:
         self.stock_id = stock_id
         self.p_l = p_l
         self.p_vp = p_vp
@@ -12,7 +29,20 @@ class Indicator:
         self.ev_ebitda = ev_ebitda
         self.ev_ebit = ev_ebit
         self.cres_rec_5a = cres_rec_5a
-    
+
     @staticmethod
-    def parse(data: dict, stock_id: int):
-        return Indicator(stock_id, data.get('p_l', None), data.get('p_vp', None), data.get('p_ebit', None), data.get('psr', None), data.get('p_ativos', None), data.get('p_cap_giro', None), data.get('p_ativ_circ_liq', None), data.get('div_yield', None), data.get('ev_ebitda', None), data.get('ev_ebit', None), data.get('cres_rec_5a', None)) 
+    def parse(data: dict[str, Any], stock_id: int) -> "Indicator":
+        return Indicator(
+            stock_id,
+            data.get("p_l"),
+            data.get("p_vp"),
+            data.get("p_ebit"),
+            data.get("psr"),
+            data.get("p_ativos"),
+            data.get("p_cap_giro"),
+            data.get("p_ativ_circ_liq"),
+            data.get("div_yield"),
+            data.get("ev_ebitda"),
+            data.get("ev_ebit"),
+            data.get("cres_rec_5a"),
+        )
