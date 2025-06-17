@@ -37,6 +37,8 @@ class InsertStock:
     def execute(self, type: str, ticker: str) -> dict[str, Any]:
         stock_data = self.extractor_strategy.execute(type, ticker)
 
+        return stock_data
+
         if not stock_data:
             raise ValueError(f"Stock data not found for ticker: {ticker}")
 

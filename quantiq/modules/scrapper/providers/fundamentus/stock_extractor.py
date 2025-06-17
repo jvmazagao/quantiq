@@ -1,6 +1,5 @@
 # type: ignore-all
 
-from datetime import datetime
 import logging
 import re
 
@@ -130,58 +129,9 @@ class FundamentusScraper(Scrapper):
                     result[key] = value
         return result
 
-    def _to_snake_case(self, s: str) -> str:
-        """Convert a string to snake_case."""
-        s = (
-            s.lower()
-            .replace("ã", "a")
-            .replace("á", "a")
-            .replace("é", "e")
-            .replace("í", "i")
-            .replace("ó", "o")
-            .replace("ú", "u")
-            .replace("ç", "c")
-        )
-        s = re.sub(r"[^a-z0-9]+", "_", s)
-        s = re.sub(r"_+", "_", s)
-        return s.strip("_")
-
     def _clean_keys(self, d: dict) -> dict:
         """Remove leading '?' and extra spaces from all keys in a dict, and convert to snake_case."""
         return {self._to_snake_case(k.lstrip("?").strip()): v for k, v in d.items()}
-
-    def _parse_value(self, value: str):
-        """Parse a string value to int, float, percent, or ISO date if possible."""
-        if value is None or value.strip() == "-":
-            return None
-
-        v = value.strip().replace(".", "").replace(" ", "")
-        # Date detection (dd/mm/yyyy)
-        date_match = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", value.strip())
-        if date_match:
-            try:
-                dt = datetime.strptime(value.strip(), "%d/%m/%Y")
-                return dt.strftime("%Y-%m-%dT00:00:00Z")
-            except Exception:
-                pass
-        # Percentages
-        if v.endswith("%"):
-            try:
-                return float(v[:-1].replace(",", "."))
-            except Exception:
-                return value
-        # Integers
-        if v.isdigit():
-            try:
-                return int(v)
-            except Exception:
-                return value
-        # Floats
-        try:
-            return float(v.replace(",", "."))
-        except Exception:
-            # Return the original value for fields like nro_ac_es that should remain as strings
-            return value
 
     def _parse_dict_values(self, d: dict) -> dict:
         """Parse all values in a dict using _parse_value."""
@@ -193,19 +143,15 @@ class FundamentusScraper(Scrapper):
         """Split the variations and indicators table into two dicts."""
         variations = {}
         indicators = {}
-        for row in rows:
-            # Skip header row if present
-            if len(row) >= 4:
-                # Left: variations (first two columns)
-                var_key = row[0].strip()
-                var_value = row[1].strip()
-                if var_key and var_key not in ["Oscilações", ""]:
-                    variations[var_key] = var_value
-                # Right: indicators (next two columns)
-                ind_key = row[2].replace("?", "").strip()
-                ind_value = row[3].strip()
-                if ind_key and ind_key not in ["Indicadores fundamentalistas", ""]:
-                    indicators[ind_key] = ind_value
+        for row in rows[1:]:
+            var_key = row[0].strip()
+            var_value = row[1].strip()
+            if var_key and var_key not in ["Oscilações", ""]:
+                variations[var_key] = var_value
+            ind_key = row[2].replace("?", "").strip()
+            ind_value = row[3].strip()
+            if ind_key and ind_key not in ["Indicadores", ""]:
+                indicators[ind_key] = ind_value
         return variations, indicators
 
     def _parse_financial_results(self, rows: list[list[str]]) -> dict:

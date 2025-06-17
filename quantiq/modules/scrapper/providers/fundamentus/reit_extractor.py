@@ -21,43 +21,6 @@ class FundamentusREITScraper(Scrapper):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
 
-    def _to_snake_case(self, s: str) -> str:
-        s = s.lower()
-        s = (
-            s.replace("ã", "a")
-            .replace("á", "a")
-            .replace("é", "e")
-            .replace("í", "i")
-            .replace("ó", "o")
-            .replace("ú", "u")
-            .replace("ç", "c")
-        )
-        s = re.sub(r"[^a-z0-9]+", "_", s)
-        s = re.sub(r"_+", "_", s)
-        return s.strip("_")
-
-    def _parse_value(self, value: str) -> float | int | None:
-        if value is None or value.strip() == "-":
-            return None
-        v = value.strip().replace(".", "").replace(" ", "")
-        # Percentual
-        if v.endswith("%"):
-            try:
-                return float(v[:-1].replace(",", "."))
-            except Exception:
-                return value  # type: ignore
-        # Inteiro
-        if v.isdigit():
-            try:
-                return int(v)
-            except Exception:
-                return value  # type: ignore
-        # Float
-        try:
-            return float(v.replace(",", "."))
-        except Exception:
-            return value  # type: ignore
-
     def _extract_basic_info(self, soup: BeautifulSoup) -> dict[str, Any]:
         """Extrai a tabela principal de informações básicas e cotação."""
         table = soup.find_all("table")[0]
@@ -163,16 +126,6 @@ class FundamentusREITScraper(Scrapper):
                 return rows
         return []
 
-    def row_to_dict(self, rows):
-        d = {}
-        for r in rows:
-            for i in range(0, len(r) - 1, 2):
-                k = self._to_snake_case(r[i])
-                v = self._parse_value(r[i + 1])
-                if k and v is not None:
-                    d[k] = v
-        return d
-
     def oscillations_to_dict(self, rows):
         oscillations = {}
         indicators = {}
@@ -232,7 +185,9 @@ class FundamentusREITScraper(Scrapper):
             raise Exception(f"REIT with ticker {ticker} not found on Fundamentus")
 
         # Get basic info and extract last_financial_info fields
-        basic_info = self.row_to_dict(self._extract_table_rows_by_header(soup, "FII"))
+        basic_info = self._table_rows_to_dict(
+            self._extract_table_rows_by_header(soup, "FII")
+        )
         last_financial_keys = [
             "cotacao",
             "min_52_sem",
@@ -250,7 +205,7 @@ class FundamentusREITScraper(Scrapper):
         )
 
         # Get properties info as market values
-        properties_dict = self.row_to_dict(
+        properties_dict = self._table_rows_to_dict(
             self._extract_table_rows_by_header(soup, "Imóveis")
         )
 
