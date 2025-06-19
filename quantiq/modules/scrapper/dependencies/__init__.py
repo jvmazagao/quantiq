@@ -1,7 +1,7 @@
-from quantiq.modules.scrapper.providers.fundamentus.reit_extractor import (
+from quantiq.modules.scrapper.providers.fundamentus.extractor.reit_extractor import (
     FundamentusREITScraper,
 )
-from quantiq.modules.scrapper.providers.fundamentus.stock_extractor import (
+from quantiq.modules.scrapper.providers.fundamentus.extractor.stock_extractor import (
     FundamentusScraper,
 )
 from quantiq.modules.scrapper.strategies.extractor import ExtractorStrategy
