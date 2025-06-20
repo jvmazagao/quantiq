@@ -78,7 +78,6 @@ class FundamentusScraper(Scrapper):
             }
 
             return StockDetails.create(data).model_dump()
-            # return data
 
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:  # type: ignore
