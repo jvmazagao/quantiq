@@ -37,14 +37,14 @@ class TestVariations:
         }
 
     def test_basic_variations(self, data: dict[str, float]):
-        variations = Variations.create(data)
+        variations = Variations(**data)
         assert variations.day == data["dia"]
         assert variations.month == data["mes"]
         assert variations.thirty_days == data["30_dias"]
         assert variations.twelve_months == data["12_meses"]
 
     def test_variations_dynamic_fields(self, dynamic_data: dict[str, float]):
-        variations = Variations.create(dynamic_data)
+        variations = Variations(**dynamic_data)
         assert variations.day == dynamic_data["dia"]
         assert variations.month == dynamic_data["mes"]
         assert variations.thirty_days == dynamic_data["30_dias"]
@@ -60,10 +60,10 @@ class TestVariations:
 
     def test_variations_invalid_year(self, data: dict[str, float | None]):
         data["2025"] = "invalid"  # type: ignore
-        variations = Variations.create(data)
+        variations = Variations(**data)
         assert variations.yearly_variations == []
 
     def test_variations_invalid_variation(self, data: dict[str, float | None]):
         data["1888"] = None  # type: ignore
-        variations = Variations.create(data)
+        variations = Variations(**data)
         assert variations.yearly_variations == []

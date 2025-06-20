@@ -239,10 +239,10 @@ class PeriodResults(Base):
     """Financial results for a specific period"""
 
     revenue: int | None = Field(
-        alias=AliasChoices("receita", "receita_liquida"),
+        alias=AliasChoices("receita", "receita_liquida"),  # type: ignore
         description="Revenue",
         default=None,
-    )  # type: ignore
+    )
     asset_sales: int | None = Field(
         alias="venda_de_ativos", description="Asset Sales", default=None
     )
