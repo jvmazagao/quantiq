@@ -120,3 +120,4 @@ exclude_lines = [
 [tool.pyright]
 reportMissingImports = false
 reportMissingModuleSource = false
+reportGeneralTypeIssues = false

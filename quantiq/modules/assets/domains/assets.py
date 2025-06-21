@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 from enum import Enum
 from typing import Any
+
+from pydantic import Field
 
 from quantiq.core.domain.base import Base
 
@@ -10,17 +11,13 @@ class AssetType(Enum):
     FII = "fii"
 
 
-@dataclass
 class Asset(Base):
-    ticker: str
-    type: AssetType
-    name: str
-    id: int | None = None
+    ticker: str = Field(description="Ticker of the asset")
+    type: AssetType = Field(description="Type of the asset")
+    name: str = Field(description="Name of the asset")
 
     @classmethod
     def create(cls, data: dict[str, Any]) -> "Asset":
         return cls(
-            ticker=str(data.get("ticker", "")),
-            type=AssetType(str(data.get("type", ""))),
-            name=str(data.get("name", "")),
+            **data,
         )
