@@ -2,14 +2,7 @@ from typing import Any
 
 from quantiq.core.errors import NotFoundException
 from quantiq.modules.assets.domains.assets import Asset
-
-
-class AssetRepository:
-    def get_by_ticker(self, ticker: str) -> Asset | None:
-        pass
-
-    def insert(self, asset: Asset) -> Asset:
-        pass
+from quantiq.modules.assets.repositories.asset_repository import AssetRepository
 
 
 class AssetNotFoundError(NotFoundException):

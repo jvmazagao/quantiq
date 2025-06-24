@@ -137,12 +137,29 @@ class Sqlite:
         finally:
             conn.close()
 
-    def execute(self, query: str, params: Any | None = None) -> int:
+    def upsert(self, query: str, params: Any | None = None) -> int | dict[str, Any]:
+        with self.transaction() as conn:
+            try:
+                cursor = conn.cursor()
+                cursor.execute(query, params or {})
+                conn.commit()
+                lastrowid = cursor.lastrowid
+                if lastrowid is None:
+                    return 0
+                return lastrowid
+            except Exception as e:
+                self.logger.error(f"Error in upsert: {e}")
+                conn.rollback()
+                raise e
+
+    def fetch_all(self, query: str, params: Any | None = None) -> list[Any]:
         with self.transaction() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params or {})
-            conn.commit()
-            lastrowid = cursor.lastrowid
-            if lastrowid is None:
-                return 0
-            return lastrowid
+            return cursor.fetchall()
+
+    def fetch_one(self, query: str, params: Any | None = None) -> Any | None:
+        with self.transaction() as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, params or {})
+            return cursor.fetchone()

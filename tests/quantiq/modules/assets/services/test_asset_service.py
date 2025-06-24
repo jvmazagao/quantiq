@@ -1,14 +1,14 @@
 from datetime import datetime
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from faker import Faker
 from pytest import fixture, raises
 
 from quantiq.modules.assets.domains.assets import Asset, AssetType
+from quantiq.modules.assets.repositories.asset_repository import AssetRepository
 from quantiq.modules.assets.services.asset_service import (
     AssetNotFoundError,
-    AssetRepository,
     AssetService,
 )
 
@@ -19,8 +19,8 @@ class TestAssetService:
         return fake.stock_data()
 
     @fixture
-    def service(self) -> AssetService:
-        return AssetService(AssetRepository())
+    def service(self, mock_db: Mock) -> AssetService:
+        return AssetService(AssetRepository(mock_db))
 
     def test_get_asset_by_ticker(self, asset: dict[str, Any], service: AssetService):
         with patch.object(AssetRepository, "get_by_ticker") as mock_get_by_ticker:
