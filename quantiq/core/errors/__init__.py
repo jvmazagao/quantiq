@@ -12,3 +12,8 @@ class NotFoundException(HTTPException):
 class BadRequestException(HTTPException):
     def __init__(self, detail: dict) -> None:
         super().__init__(status_code=400, detail=detail)
+
+
+class ConflictException(HTTPException):
+    def __init__(self, detail: dict) -> None:
+        super().__init__(status_code=409, detail=detail)

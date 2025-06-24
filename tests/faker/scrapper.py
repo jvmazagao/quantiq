@@ -38,4 +38,5 @@ class StockScrapperProvider(StockProvider):
         return {
             "ticker": ticker,
             "name": stock_name,
+            "type": "stock",
         }
