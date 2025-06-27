@@ -4,8 +4,16 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from quantiq.database.database import create_database
-from quantiq.modules.stocks.dependencies import make_stock_router
+from quantiq.core.infra.databases.sqlite.sqlite import Sqlite
+from quantiq.modules.assets.controllers.asset_controllers import AssetController
+from quantiq.modules.assets.manager.asset_manager import AssetManager
+from quantiq.modules.assets.repositories.asset_repository import AssetRepository
+from quantiq.modules.assets.services.asset_service import AssetService
+from quantiq.modules.scrapper.providers.fundamentus.extractor import (
+    FundamentusREITExtractor,
+    FundamentusStockExtractor,
+)
+from quantiq.modules.scrapper.strategies.extractor import ExtractorStrategy
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +36,19 @@ app.add_middleware(
 
 @app.on_event("startup")  # type: ignore
 async def startup_event() -> None:
-    create_database()
     logger.info("Database initialized")
-    app.include_router(make_stock_router())
+    Sqlite.create_database("quantiq.db")
+    logger.info("Database created")
+
+    database = Sqlite("quantiq.db")
+    extractor = ExtractorStrategy()
+    extractor.set_strategy(FundamentusStockExtractor())
+    extractor.set_strategy(FundamentusREITExtractor())
+    asset_service = AssetService(AssetRepository(database))
+    asset_manager = AssetManager(extractor, asset_service)
+    asset_controller = AssetController(asset_manager)
+
+    app.include_router(asset_controller)
 
 
 @app.get("/")  # type: ignore

@@ -8,15 +8,15 @@ from typing import Any
 from bs4 import BeautifulSoup
 import requests
 
-from quantiq.modules.scrapper.providers.fundamentus.data import REITDetails
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType, REITDetails
 from quantiq.modules.scrapper.providers.scrapper import Scrapper
 
 logger = logging.getLogger(__name__)
 
 
-class FundamentusREITScraper(Scrapper):
+class FundamentusREITExtractor(Scrapper):
     def __init__(self) -> None:
-        super().__init__("reits")
+        super().__init__(AssetType.REIT)
         self.base_url = "https://www.fundamentus.com.br/detalhes.php"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -191,7 +191,7 @@ class FundamentusREITScraper(Scrapper):
             "financial_results": oscillations_dict.get("indicators_by_period", {}),
         }
 
-        return REITDetails.create(data).model_dump()
+        return REITDetails.create(**data).model_dump()
 
     def _is_reit_not_found(self, soup: BeautifulSoup) -> bool:
         """Check if the REIT was not found on Fundamentus."""

@@ -5,13 +5,13 @@ import logging
 from bs4 import BeautifulSoup
 import requests
 
-from quantiq.modules.scrapper.providers.fundamentus.data import StockDetails
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType, StockDetails
 from quantiq.modules.scrapper.providers.scrapper import Scrapper
 
 
-class FundamentusScraper(Scrapper):
+class FundamentusStockExtractor(Scrapper):
     def __init__(self):
-        super().__init__("stocks")
+        super().__init__(AssetType.STOCK)
         self.base_url = "https://www.fundamentus.com.br/detalhes.php"
         self.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"

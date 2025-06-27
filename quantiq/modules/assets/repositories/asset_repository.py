@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from quantiq.core.infra.databases.sqlite.sqlite import Sqlite
 from quantiq.core.logging.base_logger import get_logger
 from quantiq.modules.assets.domains.assets import Asset
-from quantiq.modules.assets.errors import AssetNotInsertedError
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType
 
 
 class AssetRepository:
@@ -10,25 +12,34 @@ class AssetRepository:
         self.db = db
 
     def get_by_ticker(self, ticker: str) -> Asset | None:
-        data = self.db.fetch_one("SELECT * FROM stocks WHERE ticker = ?", (ticker,))
+        query = "SELECT id, ticker, name, type, created_at, updated_at FROM assets WHERE ticker = :ticker"
+        params = {"ticker": ticker}
+        data = self.db.fetch_one(query, params)
         if data:
-            return Asset.create(data)
+            (id, _, name, type, created_at, updated_at) = data
+            return Asset(
+                id=int(id),
+                ticker=ticker,
+                name=name,
+                type=AssetType(type),
+                created_at=datetime.fromisoformat(created_at),
+                updated_at=datetime.fromisoformat(updated_at),
+            )
         return None
 
-    def insert(self, data: Asset) -> Asset:
+    def insert(self, data: Asset) -> Asset | None:
         try:
             query = """
-                INSERT INTO stocks (ticker, name, type) VALUES (?, ?, ?)
+                INSERT INTO assets (ticker, name, type) VALUES (?, ?, ?)
                 ON CONFLICT(ticker) DO UPDATE SET
                     name = excluded.name,
                     type = excluded.type,
-                    updated_at = NOW()
-                RETURNING id, name, type, created_at, updated_at
+                    updated_at = datetime('now', 'utc')
+                RETURNING id, ticker, name, type, created_at, updated_at
             """
             result = self.db.upsert(query, (data.ticker, data.name, data.type.value))
-            if not result or isinstance(result, int):
-                raise AssetNotInsertedError()
-            return Asset.create(result)
+            data.id = result
+            return data
         except Exception as e:
             self.logger.error(f"Error inserting asset: {e}")
             raise e

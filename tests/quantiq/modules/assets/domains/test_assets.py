@@ -4,6 +4,7 @@ from faker import Faker
 from pytest import fixture
 
 from quantiq.modules.assets.domains.assets import Asset
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType
 
 
 class TestAssets:
@@ -14,14 +15,14 @@ class TestAssets:
                 fake.company().upper().split(" ")[0]
                 + str(fake.random_int(min=3, max=11))
             ),
-            "type": "stock",
+            "type": AssetType.STOCK,
             "name": fake.company(),
         }
 
     def test_create_asset(self, data: dict[str, Any]):
         asset = Asset.create(data)
         assert asset.ticker == data["ticker"]
-        assert asset.type.value == data["type"]
+        assert asset.type == data["type"]
         assert asset.name == data["name"]
         assert asset.id is None
         assert asset.created_at is None

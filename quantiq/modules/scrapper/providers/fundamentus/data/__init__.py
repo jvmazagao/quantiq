@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from pydantic import (
@@ -9,6 +10,11 @@ from pydantic import (
     model_validator,
 )
 from pydantic.aliases import AliasChoices
+
+
+class AssetType(Enum):
+    STOCK = "stocks"
+    REIT = "reits"
 
 
 class Base(BaseModel):
@@ -320,6 +326,10 @@ class REITDetails(Details):
     @model_validator(mode="before")
     def clean_up_empty_fields(cls, values: Any) -> dict[str, Any]:
         return {k: v for k, v in values.items() if v is not None}
+
+    @classmethod
+    def create(cls, data: dict[str, Any]) -> "REITDetails":
+        return cls(**data)
 
 
 class StockDetails(Details):

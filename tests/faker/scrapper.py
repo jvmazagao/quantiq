@@ -2,6 +2,8 @@ from typing import Any
 
 from faker.providers import BaseProvider
 
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType
+
 
 class StockProvider(BaseProvider):
     def __init__(self, generator):
@@ -38,5 +40,5 @@ class StockScrapperProvider(StockProvider):
         return {
             "ticker": ticker,
             "name": stock_name,
-            "type": "stock",
+            "type": AssetType.STOCK,
         }

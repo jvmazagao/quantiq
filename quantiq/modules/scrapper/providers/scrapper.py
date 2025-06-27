@@ -6,11 +6,13 @@ import unicodedata
 
 from bs4 import BeautifulSoup
 
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType
+
 
 class Scrapper(ABC):
-    type: str
+    type: AssetType
 
-    def __init__(self, type: str) -> None:
+    def __init__(self, type: AssetType) -> None:
         self.type = type
 
     @abstractmethod

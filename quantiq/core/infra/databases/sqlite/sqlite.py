@@ -103,8 +103,6 @@ class Sqlite:
         self.logger = logging.getLogger(__name__)
         self.db_name = db_name
         self.db_path = get_project_root() / db_name
-        self.conn = sqlite3.connect(self.db_path)
-        self.cursor = self.conn.cursor()
 
     """
     Create the database.
@@ -114,7 +112,7 @@ class Sqlite:
     """
 
     @staticmethod
-    def create_database(db_name: str) -> None:
+    def create_database(db_name: str = "quantiq.db") -> None:
         db_path = get_project_root() / db_name
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -129,7 +127,7 @@ class Sqlite:
 
     @contextmanager
     def transaction(self) -> Generator[sqlite3.Connection, None, None]:
-        conn = self.conn
+        conn = sqlite3.connect(self.db_path)
         try:
             yield conn
         except Exception as e:
@@ -138,11 +136,12 @@ class Sqlite:
         finally:
             conn.close()
 
-    def upsert(self, query: str, params: Any | None = None) -> int | dict[str, Any]:
+    def upsert(self, query: str, params: Any | None = None) -> int:
         with self.transaction() as conn:
             try:
                 cursor = conn.cursor()
                 cursor.execute(query, params or {})
+                cursor.close()
                 conn.commit()
                 lastrowid = cursor.lastrowid
                 if lastrowid is None:
