@@ -7,7 +7,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from quantiq.core.infra.databases.sqlite.sqlite import Sqlite
 from quantiq.modules.assets.controllers.asset_controllers import AssetController
 from quantiq.modules.assets.manager.asset_manager import AssetManager
+from quantiq.modules.assets.repositories.asset_details_repository import (
+    AssetDetailsRepository,
+)
 from quantiq.modules.assets.repositories.asset_repository import AssetRepository
+from quantiq.modules.assets.services.asset_details_service import AssetDetailsService
 from quantiq.modules.assets.services.asset_service import AssetService
 from quantiq.modules.scrapper.providers.fundamentus.extractor import (
     FundamentusREITExtractor,
@@ -44,7 +48,9 @@ async def startup_event() -> None:
     extractor = ExtractorStrategy()
     extractor.set_strategy(FundamentusStockExtractor())
     extractor.set_strategy(FundamentusREITExtractor())
-    asset_service = AssetService(AssetRepository(database))
+    asset_service = AssetService(
+        AssetRepository(database), AssetDetailsService(AssetDetailsRepository(database))
+    )
     asset_manager = AssetManager(extractor, asset_service)
     asset_controller = AssetController(asset_manager)
 

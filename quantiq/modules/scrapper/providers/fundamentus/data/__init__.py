@@ -339,7 +339,7 @@ class StockDetails(Details):
     market_value: int = Field(alias="valor_de_mercado")
     last_balance_proccessed: datetime = Field(alias="ult_balanco_processado")
     company_value: int | None = Field(alias="valor_da_firma", default=None)
-    stock_number: int = Field(alias="nro_acoes")
+    number_of_stocks: int = Field(alias="nro_acoes")
 
     asset: Asset = Field(alias="last_financial_info")
     variations: Variations = Field(alias="variations")

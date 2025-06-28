@@ -15,11 +15,8 @@ class AssetManager:
 
     def create_asset(self, ticker: str) -> Asset:
         data = self.extractor.execute(AssetType.STOCK, ticker)
-        asset = self.asset_service.insert_asset(
-            {
-                "ticker": data["ticker"],
-                "name": data["name"],
-                "type": AssetType.STOCK.value,
-            }
-        )
+        asset = self.asset_service.insert_asset(data)
+        if not asset:
+            raise ValueError("Asset not found")
+
         return asset
