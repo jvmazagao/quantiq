@@ -7,6 +7,7 @@ from pytest import fixture, raises
 
 from quantiq.modules.assets.domains.assets import Asset, AssetType
 from quantiq.modules.assets.repositories.asset_repository import AssetRepository
+from quantiq.modules.assets.services.asset_details_service import AssetDetailsService
 from quantiq.modules.assets.services.asset_service import (
     AssetNotFoundError,
     AssetService,
@@ -19,8 +20,12 @@ class TestAssetService:
         return fake.stock_data()
 
     @fixture
+    def asset_details(self, fake: Faker) -> dict[str, Any]:
+        return fake.asset_details()
+
+    @fixture
     def service(self, mock_db: Mock) -> AssetService:
-        return AssetService(AssetRepository(mock_db))
+        return AssetService(AssetRepository(mock_db), AssetDetailsService(mock_db))
 
     def test_get_asset_by_ticker(self, asset: dict[str, Any], service: AssetService):
         with patch.object(AssetRepository, "get_by_ticker") as mock_get_by_ticker:
@@ -43,21 +48,30 @@ class TestAssetService:
             when_get_asset_by_ticker()
             when_get_asset_by_ticker_not_found()
 
-    def test_insert_asset(self, asset: dict[str, Any], service: AssetService):
+    def test_insert_asset(
+        self,
+        asset: dict[str, Any],
+        asset_details: dict[str, Any],
+        service: AssetService,
+    ):
         with patch.object(AssetRepository, "get_by_ticker") as mock_get_by_ticker:  # noqa: SIM117
-            with patch.object(AssetRepository, "insert") as mock_insert:
+            with patch.object(AssetRepository, "insert") as mock_insert, patch.object(
+                AssetDetailsService, "insert_asset_details"
+            ):
 
                 def when_insert_asset():
-                    date = datetime.now()
-                    expected_asset = Asset.create(
-                        {**asset, "id": 1, "created_at": date, "updated_at": date}
-                    )
+                    data = {
+                        **asset,
+                        **asset_details,
+                    }
+                    asset_data = Asset.create({**asset})
+                    expected_asset = Asset.create(data)
                     mock_get_by_ticker.return_value = None
                     mock_insert.return_value = expected_asset
-                    created_asset = service.insert_asset(expected_asset.model_dump())
+                    created_asset = service.insert_asset(data)
 
-                    mock_get_by_ticker.assert_called_with(expected_asset.ticker)
-                    mock_insert.assert_called_once_with(expected_asset)
+                    mock_get_by_ticker.assert_called_with(asset["ticker"])
+                    mock_insert.assert_called_once_with(asset_data)
 
                     assert created_asset.ticker == expected_asset.ticker
                     assert created_asset.name == expected_asset.name

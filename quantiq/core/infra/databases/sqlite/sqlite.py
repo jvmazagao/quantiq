@@ -152,13 +152,15 @@ class Sqlite:
                 conn.rollback()
                 raise e
 
-    def fetch_all(self, query: str, params: Any | None = None) -> list[Any]:
+    def fetch_all(self, query: str, params: Any | None = None) -> list[tuple[Any, ...]]:
         with self.transaction() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params or {})
             return cursor.fetchall()
 
-    def fetch_one(self, query: str, params: Any | None = None) -> Any | None:
+    def fetch_one(
+        self, query: str, params: Any | None = None
+    ) -> tuple[Any, ...] | None:
         with self.transaction() as conn:
             cursor = conn.cursor()
             cursor.execute(query, params or {})

@@ -26,7 +26,7 @@ class AssetService:
             raise AssetNotFoundError(ticker)
         return asset
 
-    def insert_asset(self, data: dict[str, Any]) -> Asset | None:
+    def insert_asset(self, data: dict[str, Any]) -> Asset:
         asset = self.asset_repository.get_by_ticker(data["ticker"])
 
         if not asset:
@@ -51,6 +51,9 @@ class AssetService:
             company_value=data["company_value"],
             number_of_stocks=data["number_of_stocks"],
         )
-        self.asset_details_service.insert_asset_details(asset_details)
+        details = self.asset_details_service.insert_asset_details(
+            data["ticker"], asset_details
+        )
+        asset.asset_details = details
 
         return asset

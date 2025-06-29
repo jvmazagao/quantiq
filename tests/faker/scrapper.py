@@ -41,4 +41,11 @@ class StockScrapperProvider(StockProvider):
             "ticker": ticker,
             "name": stock_name,
             "type": AssetType.STOCK,
+            "governance": self.generator.random_element(elements=["ON", "PN"]),
+            "sector": self.generator.word(),
+            "subsector": self.generator.word(),
+            "market_value": self.generator.random_int(min=1000000, max=1000000000),
+            "last_balance_proccessed": self.generator.date_time(),
+            "company_value": self.generator.random_int(min=1000000, max=1000000000),
+            "number_of_stocks": self.generator.random_int(min=1000000, max=1000000000),
         }

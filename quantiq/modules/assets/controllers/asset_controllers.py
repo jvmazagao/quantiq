@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Response
+from fastapi import APIRouter
 
+from quantiq.modules.assets.domains.assets import Asset
 from quantiq.modules.assets.manager.asset_manager import AssetManager
 
 
@@ -9,13 +10,9 @@ class AssetController(APIRouter):
         self.service = service
         self.register_routes()
 
-    def insert_asset(self, ticker: str) -> Response:
+    def insert_asset(self, ticker: str) -> Asset:
         asset = self.service.create_asset(ticker)
-        return Response(
-            status_code=201,
-            content=asset.model_dump_json(),
-            media_type="application/json",
-        )
+        return asset
 
     def register_routes(self) -> None:
         self.add_api_route("/{ticker}", self.insert_asset, methods=["POST"])

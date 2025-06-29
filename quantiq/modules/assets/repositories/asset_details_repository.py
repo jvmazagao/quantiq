@@ -11,20 +11,22 @@ class AssetDetailsRepository:
     def get_by_ticker(self, ticker: str) -> AssetDetails | None:
         query = """
             SELECT
-                as.id,
-                as.governance,
-                as.sector,
-                as.subsector,
-                as.market_value,
-                as.last_balance_proccessed,
-                as.company_value,
-                as.number_of_stocks,
-                as.asset_id,
-                as.created_at,
-                as.updated_at,
-            FROM asset_details as
-            INNER JOIN assets a ON as.asset_id = a.id
+                ad.id,
+                ad.governance,
+                ad.sector,
+                ad.subsector,
+                ad.market_value,
+                ad.last_balance_proccessed,
+                ad.company_value,
+                ad.number_of_stocks,
+                ad.asset_id,
+                ad.created_at,
+                ad.updated_at
+            FROM asset_details ad
+            INNER JOIN assets a ON ad.asset_id = a.id
             WHERE a.ticker = :ticker
+            ORDER BY ad.created_at DESC
+            LIMIT 1
         """
         params = {"ticker": ticker}
         data = self.db.fetch_one(query, params)
