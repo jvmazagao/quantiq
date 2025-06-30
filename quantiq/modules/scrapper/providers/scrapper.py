@@ -4,11 +4,15 @@ import re
 from typing import Any
 import unicodedata
 
+from bs4 import BeautifulSoup
+
+from quantiq.modules.scrapper.providers.fundamentus.data import AssetType
+
 
 class Scrapper(ABC):
-    type: str
+    type: AssetType
 
-    def __init__(self, type: str) -> None:
+    def __init__(self, type: AssetType) -> None:
         self.type = type
 
     @abstractmethod
@@ -19,25 +23,23 @@ class Scrapper(ABC):
         if not s:
             return s
 
-        # Normalize unicode and remove accents
         s = unicodedata.normalize("NFD", s.lower())
         s = "".join(c for c in s if unicodedata.category(c) != "Mn")
 
-        # Replace non-alphanumeric with underscore and clean up
         s = re.sub(r"[^a-z0-9]+", "_", s).strip("_")
         return s
 
     def _parse_value(self, value: str) -> float | int | str | None:
-        if value is None or value.strip() == "-":
+        if value is None or value == "-" or value == "":
             return None
 
-        v = value.strip().replace(".", "").replace(" ", "")
+        v = str(value).strip().replace(".", "").replace(" ", "")
 
-        date_match = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", value.strip())
+        date_match = re.match(r"^(\d{2})/(\d{2})/(\d{4})$", v)
 
         if date_match:
             try:
-                dt = datetime.strptime(value.strip(), "%d/%m/%Y")
+                dt = datetime.strptime(v, "%d/%m/%Y")
                 return dt.strftime("%Y-%m-%dT00:00:00Z")
             except Exception:
                 pass
@@ -48,6 +50,12 @@ class Scrapper(ABC):
             except Exception:
                 return value
 
+        if "," in v:
+            try:
+                return float(v.replace(",", "."))
+            except Exception:
+                return value
+
         if v.isdigit():
             try:
                 return int(v)
@@ -55,7 +63,7 @@ class Scrapper(ABC):
                 return value
 
         try:
-            return float(v.replace(",", "."))
+            return float(v)
         except Exception:
             return value
 
@@ -63,8 +71,34 @@ class Scrapper(ABC):
         d = {}
         for r in rows:
             for i in range(0, len(r) - 1, 2):
-                k = self._to_snake_case(r[i])
+                k = self._format_key(r[i])
                 v = self._parse_value(r[i + 1])
                 if k and v is not None:
                     d[k] = v
         return d
+
+    def _format_key(self, k: str) -> str:
+        if not k:
+            return k
+
+        return self._to_snake_case(k.replace("?", "").strip())
+
+    def _clean_keys(self, d: dict) -> dict:
+        return {self._format_key(k): v for k, v in d.items() if k}
+
+    def _extract_table_rows_by_header(
+        self, soup: BeautifulSoup, header_text: str
+    ) -> list[list[str]]:
+        for table in soup.find_all("table"):
+            header = table.find("tr")  # type: ignore
+            if header and header_text in header.get_text():  # type: ignore
+                rows = []
+                for tr in table.find_all("tr"):  # type: ignore
+                    cells = [
+                        cell.get_text(strip=True)
+                        for cell in tr.find_all(["th", "td"])  # type: ignore
+                    ]
+                    if cells:
+                        rows.append(cells)
+                return rows
+        return []
