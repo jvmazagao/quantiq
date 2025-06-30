@@ -10,9 +10,9 @@ class AssetController(APIRouter):
         self.service = service
         self.register_routes()
 
-    def insert_asset(self, ticker: str) -> Asset:
+    def get_asset(self, ticker: str) -> Asset:
         asset = self.service.create_asset(ticker)
         return asset
 
     def register_routes(self) -> None:
-        self.add_api_route("/{ticker}", self.insert_asset, methods=["POST"])
+        self.add_api_route("/{ticker}", self.get_asset, methods=["GET"])
